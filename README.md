@@ -96,7 +96,7 @@ Server akan berjalan pada:
 - Password: `password`
 - Role: Laboran
 
-### Students (10 users)
+### Students (12 users)
 - Email: Tergenerate otomatis
 - Password: `password`
 - Role: User

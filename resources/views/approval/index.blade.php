@@ -107,6 +107,7 @@
 </div>
 
 <script>
+// Define functions first (global scope)
 function approveModal(id) {
     if (confirm('Setuju dengan peminjaman ini?')) {
         fetch('/approval/' + id + '/approve', {
@@ -115,37 +116,172 @@ function approveModal(id) {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Content-Type': 'application/json'
             }
-        }).then(() => location.reload());
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Gagal menyetujui peminjaman');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan');
+        });
     }
 }
 
 function rejectModal(id) {
-    const reason = prompt('Alasan penolakan:');
-    if (reason) {
-        fetch('/approval/' + id + '/reject', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ alasan_reject: reason })
-        }).then(() => location.reload());
+    // Create a modal dialog for rejection reason input
+    const modal = document.createElement('div');
+    modal.id = 'rejectModal_' + id;
+    modal.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div style="background: white; padding: 2rem; border-radius: 0.5rem; width: 90%; max-width: 400px;">
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Tolak Peminjaman</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Alasan Penolakan: *</label>
+                    <textarea id="rejectReason_${id}" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 0.25rem; height: 100px; font-family: inherit;" placeholder="Masukkan alasan penolakan..."></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="confirmReject(${id})" style="flex: 1; background: #dc2626; color: white; padding: 0.5rem; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 500;">
+                        Tolak
+                    </button>
+                    <button onclick="cancelReject(${id})" style="flex: 1; background: #6b7280; color: white; padding: 0.5rem; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 500;">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function confirmReject(id) {
+    const reason = document.getElementById('rejectReason_' + id).value;
+    
+    if (!reason || reason.trim() === '') {
+        alert('Alasan penolakan harus diisi');
+        return;
     }
+    
+    // Close modal
+    const modal = document.getElementById('rejectModal_' + id);
+    if (modal) modal.remove();
+    
+    fetch('/approval/' + id + '/reject', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ alasan_reject: reason })
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Gagal menolak peminjaman');
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan');
+    });
+}
+
+function cancelReject(id) {
+    const modal = document.getElementById('rejectModal_' + id);
+    if (modal) modal.remove();
 }
 
 function returnModal(id) {
-    const date = prompt('Tanggal pengembalian (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-    if (date) {
-        fetch('/approval/' + id + '/return', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ tanggal_kembali: date, catatan: '' })
-        }).then(() => location.reload());
-    }
+    // Create a modal dialog for return date input
+    const today = new Date().toISOString().split('T')[0];
+    const modal = document.createElement('div');
+    modal.id = 'returnModal_' + id;
+    modal.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div style="background: white; padding: 2rem; border-radius: 0.5rem; width: 90%; max-width: 400px;">
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Proses Pengembalian Alat</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Tanggal Pengembalian:</label>
+                    <input type="date" id="returnDate_${id}" value="${today}" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 0.25rem;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Catatan (Opsional):</label>
+                    <textarea id="returnNote_${id}" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 0.25rem; height: 80px;"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="confirmReturn(${id})" style="flex: 1; background: #16a34a; color: white; padding: 0.5rem; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 500;">
+                        Simpan
+                    </button>
+                    <button onclick="cancelReturn(${id})" style="flex: 1; background: #ef4444; color: white; padding: 0.5rem; border: none; border-radius: 0.25rem; cursor: pointer; font-weight: 500;">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 }
+
+function confirmReturn(id) {
+    const date = document.getElementById('returnDate_' + id).value;
+    const note = document.getElementById('returnNote_' + id).value;
+    
+    if (!date) {
+        alert('Tanggal pengembalian harus diisi');
+        return;
+    }
+    
+    // Close modal
+    const modal = document.getElementById('returnModal_' + id);
+    if (modal) modal.remove();
+    
+    fetch('/approval/' + id + '/return', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ tanggal_kembali: date, catatan: note || '' })
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Gagal memproses pengembalian');
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan');
+    });
+}
+
+function cancelReturn(id) {
+    const modal = document.getElementById('returnModal_' + id);
+    if (modal) modal.remove();
+}
+
+// Attach event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach event listeners for approve buttons
+    document.querySelectorAll('.btn-approve').forEach(button => {
+        button.addEventListener('click', function() {
+            approveModal(this.dataset.id);
+        });
+    });
+
+    // Attach event listeners for reject buttons
+    document.querySelectorAll('.btn-reject').forEach(button => {
+        button.addEventListener('click', function() {
+            rejectModal(this.dataset.id);
+        });
+    });
+
+    // Attach event listeners for return buttons
+    document.querySelectorAll('.btn-return').forEach(button => {
+        button.addEventListener('click', function() {
+            returnModal(this.dataset.id);
+        });
+    });
+});
 </script>
 
 @endsection
