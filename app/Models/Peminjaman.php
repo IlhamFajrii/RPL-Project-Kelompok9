@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Peminjaman extends Model
+{
+    use HasFactory;
+
+    protected $table = 'peminjaman';
+
+    protected $fillable = [
+        'user_id',
+        'alat_id',
+        'tanggal_pinjam',
+        'tanggal_rencana_kembali',
+        'tanggal_kembali',
+        'status_approval',
+        'foto_kondisi_awal',
+        'foto_kondisi_akhir',
+        'catatan',
+        'alasan_reject',
+    ];
+
+    protected $casts = [
+        'tanggal_pinjam' => 'datetime',
+        'tanggal_rencana_kembali' => 'datetime',
+        'tanggal_kembali' => 'datetime',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function alat(): BelongsTo
+    {
+        return $this->belongsTo(Alat::class);
+    }
+
+    public function logsNotifikasi(): HasMany
+    {
+        return $this->hasMany(LogsNotifikasi::class);
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status_approval === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status_approval === 'approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status_approval === 'rejected';
+    }
+
+    public function isReturned(): bool
+    {
+        return $this->status_approval === 'returned';
+    }
+
+    public function isLate(): bool
+    {
+        if ($this->isReturned() && $this->tanggal_kembali) {
+            return $this->tanggal_kembali > $this->tanggal_rencana_kembali;
+        }
+        return now() > $this->tanggal_rencana_kembali && !$this->isReturned();
+    }
+}
