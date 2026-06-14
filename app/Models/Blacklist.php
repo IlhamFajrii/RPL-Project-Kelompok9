@@ -6,6 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string $alasan
+ * @property \Illuminate\Support\Carbon $tanggal_mulai
+ * @property \Illuminate\Support\Carbon|null $tanggal_berakhir
+ * @property bool $aktif
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ */
 class Blacklist extends Model
 {
     use HasFactory;

@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckAdminOrLaboran
+class CheckBlacklist
 {
     public function handle(Request $request, Closure $next): Response
     {
@@ -18,10 +18,11 @@ class CheckAdminOrLaboran
 
         /** @var User $user */
         $user = Auth::user();
-        if ($user->isAdmin() || $user->isLaboran()) {
-            return $next($request);
+
+        if ($user->isBlacklisted()) {
+            return redirect('/')->with('error', 'Akses ditolak: Anda tidak dapat melakukan peminjaman karena masuk dalam daftar blacklist');
         }
 
-        return redirect('/')->with('error', 'Anda tidak memiliki akses');
+        return $next($request);
     }
 }

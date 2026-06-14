@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AlatController;
 use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\ApprovalController;
+use App\Http\Controllers\BlacklistController;
 use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\ReportController;
 
@@ -31,14 +32,16 @@ Route::middleware('auth')->group(function () {
     // General show route - comes after specific routes
     Route::get('/alat/{alat}', [AlatController::class, 'show'])->name('alat.show');
 
-    // Peminjaman
-    Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
-    Route::get('/peminjaman/{alat}/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
-    Route::post('/peminjaman/{alat}', [PeminjamanController::class, 'store'])->name('peminjaman.store');
-    Route::get('/peminjaman/{peminjaman}', [PeminjamanController::class, 'show'])->name('peminjaman.show');
-    Route::post('/peminjaman/{peminjaman}/upload-awal', [PeminjamanController::class, 'uploadFotoKondisiAwal'])->name('peminjaman.upload-awal');
-    Route::post('/peminjaman/{peminjaman}/upload-akhir', [PeminjamanController::class, 'uploadFotoKondisiAkhir'])->name('peminjaman.upload-akhir');
-    Route::delete('/peminjaman/{peminjaman}', [PeminjamanController::class, 'destroy'])->name('peminjaman.destroy');
+    // Peminjaman - Protected by blacklist check
+    Route::middleware('check_blacklist')->group(function () {
+        Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
+        Route::get('/peminjaman/{alat}/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
+        Route::post('/peminjaman/{alat}', [PeminjamanController::class, 'store'])->name('peminjaman.store');
+        Route::get('/peminjaman/{peminjaman}', [PeminjamanController::class, 'show'])->name('peminjaman.show');
+        Route::post('/peminjaman/{peminjaman}/upload-awal', [PeminjamanController::class, 'uploadFotoKondisiAwal'])->name('peminjaman.upload-awal');
+        Route::post('/peminjaman/{peminjaman}/upload-akhir', [PeminjamanController::class, 'uploadFotoKondisiAkhir'])->name('peminjaman.upload-akhir');
+        Route::delete('/peminjaman/{peminjaman}', [PeminjamanController::class, 'destroy'])->name('peminjaman.destroy');
+    });
 
     // QR Code
     Route::get('/qr/alat/{alat}', [QRCodeController::class, 'generateAlatQR'])->name('qr.alat');
@@ -57,6 +60,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/report', [ReportController::class, 'index'])->name('report.index');
         Route::post('/report/pdf', [ReportController::class, 'generatePDF'])->name('report.pdf');
         Route::post('/report/excel', [ReportController::class, 'generateExcel'])->name('report.excel');
+    });
+
+    // Blacklist Management - Admin Only
+    Route::middleware('admin')->group(function () {
+        Route::get('/blacklist', [BlacklistController::class, 'index'])->name('blacklist.index');
+        Route::get('/blacklist/create', [BlacklistController::class, 'create'])->name('blacklist.create');
+        Route::post('/blacklist', [BlacklistController::class, 'store'])->name('blacklist.store');
+        Route::get('/blacklist/{blacklist}/edit', [BlacklistController::class, 'edit'])->name('blacklist.edit');
+        Route::put('/blacklist/{blacklist}', [BlacklistController::class, 'update'])->name('blacklist.update');
+        Route::delete('/blacklist/{blacklist}', [BlacklistController::class, 'destroy'])->name('blacklist.destroy');
+        Route::post('/blacklist/remove-expired', [BlacklistController::class, 'removeExpired'])->name('blacklist.remove-expired');
     });
 });
 

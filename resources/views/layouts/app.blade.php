@@ -79,6 +79,17 @@
                         </a>
                     </li>
 
+                    @if(auth()->user()->isAdmin())
+                    <li>
+                        <a href="{{ route('blacklist.index') }}" class="nav-link group flex items-center px-6 py-3 hover:bg-blue-800 transition-all duration-300">
+                            <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Blacklist User
+                        </a>
+                    </li>
+                    @endif
+
                     <li>
                         <a href="{{ route('alat.create') }}" class="nav-link group flex items-center px-6 py-3 hover:bg-blue-800 transition-all duration-300">
                             <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

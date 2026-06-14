@@ -63,6 +63,9 @@ class User extends Authenticatable
 
     public function isBlacklisted(): bool
     {
-        return $this->status_blacklist === true;
+        // Check dari database blacklist table secara realtime
+        return Blacklist::where('user_id', $this->id)
+                       ->where('aktif', true)
+                       ->exists();
     }
 }

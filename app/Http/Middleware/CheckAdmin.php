@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckAdminOrLaboran
+class CheckAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
@@ -18,7 +18,7 @@ class CheckAdminOrLaboran
 
         /** @var User $user */
         $user = Auth::user();
-        if ($user->isAdmin() || $user->isLaboran()) {
+        if ($user->isAdmin()) {
             return $next($request);
         }
 

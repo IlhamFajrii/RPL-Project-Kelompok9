@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin_or_laboran' => \App\Http\Middleware\CheckAdminOrLaboran::class,
             'laboran' => \App\Http\Middleware\CheckLaboran::class,
+            'admin' => \App\Http\Middleware\CheckAdmin::class,
+            'check_blacklist' => \App\Http\Middleware\CheckBlacklist::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
