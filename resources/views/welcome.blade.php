@@ -5,25 +5,125 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SPAL - Sistem Peminjaman Alat Laboratorium</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        .welcome-container {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-background {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            opacity: 0.1;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .logo-background img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content-wrapper h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .content-wrapper p {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-wrapper .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-wrapper .description {
+            font-size: 1.125rem;
+            color: #bfdbfe;
+            margin-bottom: 2rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .button-group a {
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-login {
+            background-color: white;
+            color: #1e3a8a;
+        }
+
+        .btn-login:hover {
+            background-color: #f3f4f6;
+            transform: scale(1.05);
+        }
+
+        .btn-register {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-register:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 min-h-screen flex items-center justify-center px-4">
-    <div class="text-center text-white max-w-2xl">
-        @auth
-            <script>window.location.href = "{{ route('dashboard') }}"</script>
-        @else
-            <h1 class="text-5xl font-bold mb-4">SPAL</h1>
-            <p class="text-2xl mb-2">Sistem Peminjaman Alat Laboratorium</p>
-            <p class="text-lg text-blue-200 mb-8">SMKN 2 Palembang</p>
+<body class="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 min-h-screen">
+    <div class="welcome-container w-full">
+        <!-- Background Logo SMKN 2 Palembang -->
+        <div class="logo-background">
+            <img src="{{ asset('images/logo-smkn2.jpg') }}" alt="SMKN 2 Palembang Logo">
+        </div>
+
+        <div class="content-wrapper max-w-2xl px-4">
+            @auth
+                <script>window.location.href = "{{ route('dashboard') }}"</script>
+            @else
+                <h1>SPAL</h1>
+                <p class="subtitle">Sistem Peminjaman Alat Laboratorium</p>
+                <p class="description">SMKN 2 Palembang</p>
             
-            <div class="mt-12 flex gap-4 justify-center">
-                <a href="{{ route('login') }}" class="px-8 py-3 bg-white text-blue-900 font-semibold rounded-lg hover:bg-blue-50 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg">
-                    Login
-                </a>
-                <a href="{{ route('register') }}" class="px-8 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg">
-                    Daftar
-                </a>
-            </div>
-        @endauth
+                <div class="button-group">
+                    <a href="{{ route('login') }}" class="btn-login">Login</a>
+                    <a href="{{ route('register') }}" class="btn-register">Daftar</a>
+                </div>
+            @endauth
+        </div>
     </div>
 </body>
 </html>
