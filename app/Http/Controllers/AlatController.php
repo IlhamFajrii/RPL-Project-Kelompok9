@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Alat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AlatController extends Controller
 {
@@ -53,14 +54,23 @@ class AlatController extends Controller
             'deskripsi' => 'nullable',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'stok' => 'required|integer|min:1',
+            'stok_tersedia' => 'nullable|integer|min:0',
         ]);
+
+        // Validasi: stok_tersedia tidak boleh lebih besar dari stok
+        if (isset($validated['stok_tersedia']) && $validated['stok_tersedia'] > $validated['stok']) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Stok Tersedia tidak boleh lebih besar dari Stok Total');
+        }
 
         if ($request->hasFile('foto')) {
             $validated['foto'] = $request->file('foto')->store('alat', 'public');
         }
 
         $validated['status'] = 'tersedia';
-        $validated['stok_tersedia'] = $validated['stok'];
+        // Jika stok_tersedia tidak diinput, gunakan nilai stok
+        $validated['stok_tersedia'] = $validated['stok_tersedia'] ?? $validated['stok'];
 
         Alat::create($validated);
 
@@ -82,14 +92,31 @@ class AlatController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:tersedia,dipinjam,rusak,maintenance',
             'stok' => 'required|integer|min:1',
+            'stok_tersedia' => 'nullable|integer|min:0',
         ]);
+
+        // Validasi: stok_tersedia tidak boleh lebih besar dari stok
+        if (isset($validated['stok_tersedia']) && $validated['stok_tersedia'] > $validated['stok']) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Stok Tersedia tidak boleh lebih besar dari Stok Total');
+        }
 
         if ($request->hasFile('foto')) {
             if ($alat->foto) {
-                \Storage::disk('public')->delete($alat->foto);
+                Storage::disk('public')->delete($alat->foto);
             }
             $validated['foto'] = $request->file('foto')->store('alat', 'public');
         }
+
+        // Always recalculate stok_tersedia based on actual borrowed items
+        $borrowedCount = $alat->peminjaman()
+            ->where('status_approval', 'approved')
+            ->whereNull('tanggal_kembali')
+            ->sum('jumlah');
+        
+        // Calculate stok_tersedia = new stok - borrowed items
+        $validated['stok_tersedia'] = $validated['stok'] - $borrowedCount;
 
         $alat->update($validated);
 
@@ -99,7 +126,7 @@ class AlatController extends Controller
     public function destroy(Alat $alat)
     {
         if ($alat->foto) {
-            \Storage::disk('public')->delete($alat->foto);
+            Storage::disk('public')->delete($alat->foto);
         }
 
         $alat->delete();

@@ -37,8 +37,8 @@ class ApprovalController extends Controller
             'status_approval' => 'approved',
         ]);
 
-        // Update alat stock
-        $peminjaman->alat->decrement('stok_tersedia');
+        // Update alat stock based on jumlah
+        $peminjaman->alat->decrement('stok_tersedia', $peminjaman->jumlah);
 
         return redirect()->back()->with('success', 'Peminjaman berhasil disetujui');
     }
@@ -74,8 +74,8 @@ class ApprovalController extends Controller
             'catatan' => $validated['catatan'] ?? null,
         ]);
 
-        // Update alat stock
-        $peminjaman->alat->increment('stok_tersedia');
+        // Update alat stock based on jumlah
+        $peminjaman->alat->increment('stok_tersedia', $peminjaman->jumlah);
 
         // Check if late and damaged
         $isLate = \Carbon\Carbon::parse($validated['tanggal_kembali']) > $peminjaman->tanggal_rencana_kembali;

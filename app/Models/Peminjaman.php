@@ -6,7 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int $alat_id
+ * @property int $jumlah
+ * @property Carbon $tanggal_pinjam
+ * @property Carbon $tanggal_rencana_kembali
+ * @property Carbon|null $tanggal_kembali
+ * @property string $status_approval
+ * @property string|null $foto_kondisi_awal
+ * @property string|null $foto_kondisi_akhir
+ * @property string|null $catatan
+ * @property string|null $alasan_reject
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 class Peminjaman extends Model
 {
     use HasFactory;
@@ -16,6 +33,7 @@ class Peminjaman extends Model
     protected $fillable = [
         'user_id',
         'alat_id',
+        'jumlah',
         'tanggal_pinjam',
         'tanggal_rencana_kembali',
         'tanggal_kembali',

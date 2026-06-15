@@ -51,6 +51,7 @@ class PeminjamanController extends Controller
     public function store(Request $request, Alat $alat)
     {
         $validated = $request->validate([
+            'jumlah' => 'required|integer|min:1|max:' . $alat->stok_tersedia,
             'tanggal_rencana_kembali' => 'required|date|after:now',
         ]);
 
@@ -65,6 +66,7 @@ class PeminjamanController extends Controller
         $peminjaman = Peminjaman::create([
             'user_id' => Auth::id(),
             'alat_id' => $alat->id,
+            'jumlah' => $validated['jumlah'],
             'tanggal_pinjam' => now(),
             'tanggal_rencana_kembali' => $validated['tanggal_rencana_kembali'],
             'status_approval' => 'pending',

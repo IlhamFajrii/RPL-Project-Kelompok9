@@ -49,6 +49,28 @@
             @csrf
 
             <div>
+                <label for="jumlah" class="block text-gray-700 font-semibold mb-2">
+                    Jumlah Peminjaman <span class="text-red-500">*</span>
+                </label>
+                <div class="flex items-center gap-2">
+                    <input 
+                        type="number" 
+                        id="jumlah" 
+                        name="jumlah"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value="{{ old('jumlah', 1) }}"
+                        min="1"
+                        max="{{ $alat->stok_tersedia }}"
+                        required
+                    >
+                    <span class="text-gray-600 text-sm">Maks: {{ $alat->stok_tersedia }}</span>
+                </div>
+                @error('jumlah')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
                 <label for="tanggal_rencana_kembali" class="block text-gray-700 font-semibold mb-2">
                     Tanggal Rencana Kembali <span class="text-red-500">*</span>
                 </label>
