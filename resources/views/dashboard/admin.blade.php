@@ -1,12 +1,19 @@
 <?php
 /**
  * @var array $chartData
+ * @var array $statusChartData
  * @var int $totalAlat
  * @var int $alatTersedia
  * @var int $alatDipinjam
  * @var int $totalUser
  * @var int $totalPeminjaman
  * @var int $alatRusak
+ * @var int $peminjamanPending
+ * @var int $peminjamanApproved
+ * @var int $peminjamanReturned
+ * @var int $peminjamanRejected
+ * @var int $peminjamanTerlambat
+ * @var \Illuminate\Database\Eloquent\Collection $topAlat
  * @var \Illuminate\Database\Eloquent\Collection $aktivitasTerbaru
  */
 ?>
@@ -37,8 +44,10 @@
                     <p class="text-gray-600 text-sm">Alat Tersedia</p>
                     <p class="text-3xl font-bold text-green-600 mt-2 count-up" id="count-tersedia">{{ $alatTersedia }}</p>
                 </div>
-                <svg class="w-12 h-12 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m0 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <svg class="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Package with checkmark -->
+                    <circle cx="12" cy="12" r="10" class="text-green-200" fill="currentColor"></circle>
+                    <path d="M8 12.5l2 2 4-4" class="text-white" stroke="white" stroke-width="3"></path>
                 </svg>
             </div>
         </div>
@@ -68,21 +77,136 @@
         </div>
     </div>
 
-    <!-- Chart and Recent Activity -->
+    <!-- Peminjaman Status Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Pending</p>
+                    <p class="text-3xl font-bold text-yellow-600 mt-2 count-up" id="count-pending">{{ $peminjamanPending }}</p>
+                </div>
+                <svg class="w-12 h-12 text-yellow-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Approved</p>
+                    <p class="text-3xl font-bold text-green-600 mt-2 count-up" id="count-approved">{{ $peminjamanApproved }}</p>
+                </div>
+                <svg class="w-12 h-12 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Returned</p>
+                    <p class="text-3xl font-bold text-blue-600 mt-2 count-up" id="count-returned">{{ $peminjamanReturned }}</p>
+                </div>
+                <svg class="w-12 h-12 text-blue-300" viewBox="0 0 24 24" fill="currentColor">
+                    <!-- Undo/Return Arrow Icon -->
+                    <circle cx="12" cy="12" r="10" class="text-blue-200" fill="currentColor"></circle>
+                    <path d="M7 12a5 5 0 0110 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"></path>
+                    <path d="M7 12L4 9m0 0l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"></path>
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Rejected</p>
+                    <p class="text-3xl font-bold text-red-600 mt-2 count-up" id="count-rejected">{{ $peminjamanRejected }}</p>
+                </div>
+                <svg class="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
+                    <!-- X Circle Icon -->
+                    <circle cx="12" cy="12" r="10" class="text-red-200" fill="currentColor"></circle>
+                    <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"></path>
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Terlambat</p>
+                    <p class="text-3xl font-bold text-red-500 mt-2 count-up" id="count-terlambat">{{ $peminjamanTerlambat }}</p>
+                </div>
+                <svg class="w-12 h-12 text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    
+<!-- Chart and Statistics Section -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Chart -->
+        <!-- Monthly Trend Chart -->
         <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold mb-4">Statistik Peminjaman (12 Bulan Terakhir)</h3>
+            <h3 class="text-lg font-semibold mb-4">Tren Peminjaman (12 Bulan Terakhir)</h3>
             <canvas id="chart-peminjaman" height="80"></canvas>
+        </div>
+
+        <!-- Status Distribution Chart -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Distribusi Status</h3>
+            <canvas id="chart-status"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Equipment Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top Equipment -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Top 5 Alat Paling Dipinjam</h3>
+            <div class="space-y-3">
+                @forelse($topAlat as $index => $alat)
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                    <div class="flex items-center">
+                        <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white text-sm font-bold rounded-full mr-3">
+                            {{ $index + 1 }}
+                        </span>
+                        <div>
+                            <p class="font-medium text-gray-800">{{ $alat->nama_alat }}</p>
+                            <p class="text-xs text-gray-500">Stok: {{ $alat->stok }}</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
+                        {{ $alat->peminjaman_count }} kali
+                    </span>
+                </div>
+                @empty
+                <p class="text-center text-gray-500 py-4">Tidak ada data peminjaman</p>
+                @endforelse
+            </div>
         </div>
 
         <!-- Quick Stats -->
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold mb-4">Quick Stats</h3>
+            <h3 class="text-lg font-semibold mb-4">Ringkasan Statistik</h3>
             <div class="space-y-4">
                 <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                     <span class="text-sm font-medium text-gray-700">Total Peminjaman</span>
                     <span class="text-2xl font-bold text-blue-600">{{ $totalPeminjaman }}</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span class="text-sm font-medium text-gray-700">Selesai (Returned)</span>
+                    <span class="text-2xl font-bold text-green-600">{{ $peminjamanReturned }}</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                    <span class="text-sm font-medium text-gray-700">Menunggu Persetujuan</span>
+                    <span class="text-2xl font-bold text-yellow-600">{{ $peminjamanPending }}</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                    <span class="text-sm font-medium text-gray-700">Terlambat Dikembalikan</span>
+                    <span class="text-2xl font-bold text-red-600">{{ $peminjamanTerlambat }}</span>
                 </div>
                 <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
                     <span class="text-sm font-medium text-gray-700">Alat Rusak</span>
@@ -145,7 +269,14 @@
         data: <?php echo json_encode($chartData['data']); ?>
     };
 
+    window.statusData = {
+        labels: <?php echo json_encode($statusChartData['labels']); ?>,
+        data: <?php echo json_encode($statusChartData['data']); ?>,
+        colors: <?php echo json_encode($statusChartData['colors']); ?>
+    };
+
     function initChart() {
+        // Line Chart for monthly trends
         const ctx = document.getElementById('chart-peminjaman');
         if (ctx && window.chartData && window.chartData.data && window.chartData.data.length > 0) {
             try {
@@ -185,6 +316,42 @@
                 console.error('Chart initialization error:', e);
             }
         }
+
+        // Doughnut Chart for status distribution
+        const statusCtx = document.getElementById('chart-status');
+        if (statusCtx && window.statusData && window.statusData.data) {
+            try {
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: window.statusData.labels,
+                        datasets: [{
+                            data: window.statusData.data,
+                            backgroundColor: window.statusData.colors,
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch(e) {
+                console.error('Status chart initialization error:', e);
+            }
+        }
     }
 
     function initCountUp() {
@@ -197,7 +364,12 @@
             { id: 'count-alat' },
             { id: 'count-tersedia' },
             { id: 'count-dipinjam' },
-            { id: 'count-user' }
+            { id: 'count-user' },
+            { id: 'count-pending' },
+            { id: 'count-approved' },
+            { id: 'count-returned' },
+            { id: 'count-rejected' },
+            { id: 'count-terlambat' }
         ];
 
         countElements.forEach(item => {

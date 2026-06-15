@@ -32,8 +32,27 @@ class DashboardController extends Controller
         $totalUser = User::where('role', 'user')->count();
         $totalPeminjaman = Peminjaman::count();
 
+        // Statistik peminjaman berdasarkan status
+        $peminjamanPending = Peminjaman::where('status_approval', 'pending')->count();
+        $peminjamanApproved = Peminjaman::where('status_approval', 'approved')->count();
+        $peminjamanReturned = Peminjaman::where('status_approval', 'returned')->count();
+        $peminjamanRejected = Peminjaman::where('status_approval', 'rejected')->count();
+        
+        // Statistik keterlambatan
+        $peminjamanTerlambat = Peminjaman::where('status_approval', 'approved')
+            ->whereNull('tanggal_kembali')
+            ->whereDate('tanggal_rencana_kembali', '<', now()->toDateString())
+            ->count();
+
         // Chart data - Monthly peminjaman
         $chartData = $this->getMonthlyChartData();
+        $statusChartData = $this->getStatusChartData();
+
+        // Top alat yang dipinjam
+        $topAlat = Alat::withCount('peminjaman')
+            ->orderByDesc('peminjaman_count')
+            ->take(5)
+            ->get();
 
         // Recent activity
         $aktivitasTerbaru = Peminjaman::with(['user', 'alat'])
@@ -48,7 +67,14 @@ class DashboardController extends Controller
             'alatRusak',
             'totalUser',
             'totalPeminjaman',
+            'peminjamanPending',
+            'peminjamanApproved',
+            'peminjamanReturned',
+            'peminjamanRejected',
+            'peminjamanTerlambat',
             'chartData',
+            'statusChartData',
+            'topAlat',
             'aktivitasTerbaru'
         ));
     }
@@ -105,6 +131,20 @@ class DashboardController extends Controller
         return [
             'months' => $months,
             'data' => $data,
+        ];
+    }
+
+    private function getStatusChartData()
+    {
+        $pending = Peminjaman::where('status_approval', 'pending')->count();
+        $approved = Peminjaman::where('status_approval', 'approved')->count();
+        $returned = Peminjaman::where('status_approval', 'returned')->count();
+        $rejected = Peminjaman::where('status_approval', 'rejected')->count();
+
+        return [
+            'labels' => ['Pending', 'Approved', 'Returned', 'Rejected'],
+            'data' => [$pending, $approved, $returned, $rejected],
+            'colors' => ['#FCD34D', '#10B981', '#3B82F6', '#EF4444'],
         ];
     }
 }
